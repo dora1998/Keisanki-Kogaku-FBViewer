@@ -28,7 +28,7 @@ try:
         df = json.load(f)
         student_num = df['student_num']
         password = df['password']
-        password_each = df['password_each']
+        password_each = df['password_each'] if 'password_each' in df else password_each
         server_port = df['server_port'] if 'server_port' in df else server_port
 
         baseurl = df['fburl']

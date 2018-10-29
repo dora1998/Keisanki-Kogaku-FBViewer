@@ -6,7 +6,7 @@
 
 ## 初期設定
 ダウンロードしたら、srcフォルダを開き、以下の設定をしてください。
-- `setting.sample.json` を `setting.json` にリネーム
+- `settings.sample.json` を `settings.json` にリネーム
 - `student_num`と `password` を記入(変換の必要はありません)
 - `fburl` にフィードバックページのアドレス「http://***/feedback.html」の「http://***/」部分を記入（講座受講者以外のアクセス防止のためです）
 - もし個別でパスワードを設定している場合は、以下のような形式で挿入
