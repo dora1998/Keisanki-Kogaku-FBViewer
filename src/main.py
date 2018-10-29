@@ -21,6 +21,8 @@ password_each = {}
 server_port = 8081
 baseurl = ""
 
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
 try:
     with open(SETTING_FILE) as f:
         df = json.load(f)
