@@ -15,34 +15,60 @@ BASEURL_HASH = '015ad04b3009cade2ca7939966495b4adc0f6c6cfdb3e0b968d15a5c2b73a051
 SETTING_FILE = "settings.json"
 DATA_FOLDER = "./data"
 
-student_num = ""
-password = ""
-password_each = {}
-server_port = 8081
 baseurl = ""
 
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+def main():
+    global baseurl
+    student_num = ""
+    password = ""
+    password_each = {}
+    server_port = 8081
 
-try:
-    with open(SETTING_FILE) as f:
-        df = json.load(f)
-        student_num = df['student_num']
-        password = df['password']
-        password_each = df['password_each'] if 'password_each' in df else password_each
-        server_port = df['server_port'] if 'server_port' in df else server_port
+    # 作業ディレクトリをスクリプトのある場所に
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-        baseurl = df['fburl']
-        if baseurl.endswith("/") == False:
-            baseurl += "/"
-        if hashlib.sha256(baseurl.encode("utf-8")).hexdigest() != BASEURL_HASH:
-            print("Error: フィードバックURLが不正です")
-            sys.exit()
-except FileNotFoundError:
-    print(SETTING_FILE +  " not found!")
-    sys.exit()
-except KeyError:
-    print("Error: 設定ファイルが不正です")
+    # 設定ファイルの読み込み
+    try:
+        with open(SETTING_FILE) as f:
+            df = json.load(f)
+            student_num = df['student_num']
+            password = df['password']
+            password_each = df['password_each'] if 'password_each' in df else password_each
+            server_port = df['server_port'] if 'server_port' in df else server_port
 
+            baseurl = df['fburl']
+            if baseurl.endswith("/") == False:
+                baseurl += "/"
+            if hashlib.sha256(baseurl.encode("utf-8")).hexdigest() != BASEURL_HASH:
+                print("Error: フィードバックURLが不正です")
+                sys.exit()
+    except FileNotFoundError:
+        print(SETTING_FILE +  " not found!")
+        sys.exit()
+    except KeyError:
+        print("Error: 設定ファイルが不正です")
+        sys.exit()
+
+    # dataフォルダがなければ作成
+    os.makedirs(DATA_FOLDER, exist_ok=True)
+
+    # フィードバックリストを取得して保存
+    fbs = getFeedbackList()
+    saveJsonFile(f"{DATA_FOLDER}/fb.json", fbs)
+
+    # 学生番号を変換
+    convstu_num = convertStuNum(student_num)
+    if convstu_num == None:
+        print("Error: Can't convert your Student ID")
+        sys.exit()
+
+    # 全フィードバックを取得
+    getAllFeedback(convstu_num, password, password_each, fbs)
+
+    # ビューワー用サーバーを開始
+    startServer(server_port)
+
+# 学生番号を変換する関数
 def convertStuNum(stunum):
     print("Convert your Student ID...")
 
@@ -56,11 +82,12 @@ def convertStuNum(stunum):
         with urllib.request.urlopen(req) as res:
             convstu_num = res.read().decode('utf-8').replace("CE-ID: ", "").replace("\n", "")
     except urllib.error.URLError:
-        print("Can't acces the convert page!")
+        print("Can't access the convert page!")
         sys.exit()
 
     return convstu_num
 
+# フィードバック一つ分をサイトから取得
 def getFeedback(id, password, date):
     params = {
         'id1': id,
@@ -74,12 +101,12 @@ def getFeedback(id, password, date):
         with urllib.request.urlopen(req) as res:
             body = res.read().decode('utf-8')
     except urllib.error.URLError:
-        print("Error: Can't acces the feedback!")
+        print("Error: Can't access the feedback!")
         sys.exit()
 
     return body
 
-def parseFeedback(body):
+def parseFeedback(body, id):
     MODE_TITLE = 0
     MODE_ANS = 1
     MODE_STATS = 2
@@ -95,7 +122,7 @@ def parseFeedback(body):
     for line in body.splitlines():
         if mode == MODE_TITLE:
             if line.startswith('id='):
-                json_data['submit_date'] = line.replace(f'id= {convstu_num} @ ', '')
+                json_data['submit_date'] = line.replace(f'id= {id} @ ', '')
                 mode = MODE_ANS
             elif line != '<pre>':
                 json_data['title'] = line.replace('<br>', '')
@@ -150,7 +177,7 @@ def getFeedbackList():
                 for opt_match in opt_matches:
                     fblist.append(opt_match)
     except urllib.error.URLError:
-        print("Can't acces the feedback list!")
+        print("Can't access the feedback list!")
         sys.exit()
 
     return fblist
@@ -164,7 +191,7 @@ def getAllFeedback(id, passwd, passwd_each, fbs):
             print(f"[Get] {fb}")
             pwd = passwd_each[fb] if fb in passwd_each else passwd
             body = getFeedback(id, pwd, fb)
-            json_data = parseFeedback(body)
+            json_data = parseFeedback(body, id)
             saveJsonFile(f"{DATA_FOLDER}/{fb}.json", json_data)
             print(f"[Saved] {fb}")
             
@@ -175,33 +202,22 @@ def saveJsonFile(filename, json_data):
     with open(filename, mode='w') as f:
         json.dump(json_data, f, indent=4)
 
-def startServer():
-    server_address = ("", server_port)
+def startServer(port):
+    server_address = ("", port)
     handler_class = http.server.SimpleHTTPRequestHandler #ハンドラを設定
     simple_server = http.server.HTTPServer(server_address, handler_class)
 
     print(' === サーバー開始 === ')
-    print(f'http://localhost:{server_port} でフィードバック一覧にアクセスできます')
+    print(f'http://localhost:{port} でフィードバック一覧にアクセスできます')
     print('終了するには、Ctrl+Cを押してください...')
     sys.stderr = open(os.devnull, 'w')
 
-    webbrowser.open(f'http://localhost:{server_port}/')
+    webbrowser.open(f'http://localhost:{port}/')
     try:
         simple_server.serve_forever()
     except:
         sys.stderr.close()
         print(' === サーバー停止 === ')
 
-os.makedirs(DATA_FOLDER, exist_ok=True)
-
-fbs = getFeedbackList()
-saveJsonFile(f"{DATA_FOLDER}/fb.json", fbs)
-
-convstu_num = convertStuNum(student_num)
-if convstu_num == None:
-    print("Error: Can't convert your Student ID")
-    sys.exit()
-
-getAllFeedback(convstu_num, password, password_each, fbs)
-
-startServer()
+if __name__ == "__main__":
+    main()
