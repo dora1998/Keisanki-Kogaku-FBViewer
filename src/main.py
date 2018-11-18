@@ -15,80 +15,117 @@ BASEURL_HASH = '015ad04b3009cade2ca7939966495b4adc0f6c6cfdb3e0b968d15a5c2b73a051
 SETTING_FILE = "settings.json"
 DATA_FOLDER = "./data"
 
-baseurl = ""
+class Config:
+    baseurl = ""
 
-def main():
-    global baseurl
     student_num = ""
     password = ""
     password_each = {}
     server_port = 8081
 
+    '''設定ファイルの読み込み'''
+    def load(self, fileName):
+        try:
+            with open(fileName) as f:
+                df = json.load(f)
+                self.student_num = df['student_num']
+                self.password = df['password']
+                if 'password_each' in df:
+                    self.password_each = df['password_each'] 
+                if 'server_port' in df:
+                    self.server_port = df['server_port']
+
+                self.baseurl = df['fburl']
+                if self.baseurl.endswith("/") == False:
+                    self.baseurl += "/"
+                if hashlib.sha256(self.baseurl.encode("utf-8")).hexdigest() != BASEURL_HASH:
+                    print("Error: フィードバックURLが不正です")
+                    sys.exit()
+        except FileNotFoundError:
+            print(fileName +  " not found!")
+            sys.exit()
+        except KeyError:
+            print("Error: 設定ファイルが不正です")
+            sys.exit()
+
+    '''設定ファイルの書き込み'''
+    def save(self, fileName):
+        df = {
+            "student_num": self.student_num,
+            "password": self.password,
+            "password_each": self.password_each,
+            "server_port": self.server_port,
+            "fburl": self.baseurl
+        }
+        with open(fileName, 'w') as f:
+            json.dump(df, f, indent=4)
+        
+
+def main():
     # 作業ディレクトリをスクリプトのある場所に
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-    # 設定ファイルの読み込み
-    try:
-        with open(SETTING_FILE) as f:
-            df = json.load(f)
-            student_num = df['student_num']
-            password = df['password']
-            password_each = df['password_each'] if 'password_each' in df else password_each
-            server_port = df['server_port'] if 'server_port' in df else server_port
+    # 設定ファイルがなければ初期設定
+    config = Config()
+    if not os.path.exists(SETTING_FILE):
+        print('Error: 設定ファイルが見つかりません\n')
+        print('-- 初期設定 --')
+        print('※提出ごとにパスワードを変えている場合は、ドキュメントを参照の上、JSONファイルを手動で設定してください\n')
 
-            baseurl = df['fburl']
-            if baseurl.endswith("/") == False:
-                baseurl += "/"
-            if hashlib.sha256(baseurl.encode("utf-8")).hexdigest() != BASEURL_HASH:
-                print("Error: フィードバックURLが不正です")
-                sys.exit()
-    except FileNotFoundError:
-        print(SETTING_FILE +  " not found!")
-        sys.exit()
-    except KeyError:
-        print("Error: 設定ファイルが不正です")
-        sys.exit()
+        print('学生番号(ハイフンなし): ', end = '')
+        config.student_num = input().replace('-', '')
+        print('パスワード: ', end = '')
+        config.password = input()
+        print('ページアドレス「http://***/feedback.html」の「http://***/」部分: ')
+        config.baseurl = input()
+
+        config.save(SETTING_FILE)
+        print('\n設定が完了しました。再度初期設定するには、settings.jsonを削除してください。\n')
+
+    # 設定ファイルの読み込み
+    config.load(SETTING_FILE)    
 
     # dataフォルダがなければ作成
     os.makedirs(DATA_FOLDER, exist_ok=True)
 
     # フィードバックリストを取得して保存
-    fbs = getFeedbackList()
+    fbs = getFeedbackList(config.baseurl)
     saveJsonFile(f"{DATA_FOLDER}/fb.json", fbs)
 
     # 学生番号を変換
-    convstu_num = convertStuNum(student_num)
-    if convstu_num == None:
-        print("Error: Can't convert your Student ID")
+    ceid = getCEID(config)
+    if ceid == None:
+        print("Error: 学生番号の変換に失敗しました")
         sys.exit()
 
     # 全フィードバックを取得
-    getAllFeedback(convstu_num, password, password_each, fbs)
+    getAllFeedback(ceid, config, ceid, fbs)
 
     # ビューワー用サーバーを開始
-    startServer(server_port)
+    startServer(config.server_port)
 
 # 学生番号を変換する関数
-def convertStuNum(stunum):
-    print("Convert your Student ID...")
+def getCEID(conf):
+    print("学兵番号変換中...", end='')
 
     params = {
-        'id0': stunum,
+        'id0': conf.student_num,
     }
-    req = urllib.request.Request(baseurl + CONVERT_URL, urllib.parse.urlencode(params).encode('ascii'))
+    req = urllib.request.Request(conf.baseurl + CONVERT_URL, urllib.parse.urlencode(params).encode('ascii'))
 
-    convstu_num = None
+    ceid = None
     try:
         with urllib.request.urlopen(req) as res:
-            convstu_num = res.read().decode('utf-8').replace("CE-ID: ", "").replace("\n", "")
+            ceid = res.read().decode('utf-8').replace("CE-ID: ", "").replace("\n", "")
     except urllib.error.URLError:
         print("Can't access the convert page!")
         sys.exit()
 
-    return convstu_num
+    print(f'\033[2K\033[Gceid: {ceid}')
+    return ceid
 
 # フィードバック一つ分をサイトから取得
-def getFeedback(id, password, date):
+def getFeedback(id, password, date, baseurl):
     params = {
         'id1': id,
         'passwd': password,
@@ -101,7 +138,7 @@ def getFeedback(id, password, date):
         with urllib.request.urlopen(req) as res:
             body = res.read().decode('utf-8')
     except urllib.error.URLError:
-        print("Error: Can't access the feedback!")
+        print("Error: フィードバックにアクセスできません!")
         sys.exit()
 
     return body
@@ -158,8 +195,8 @@ def parseFeedback(body, id):
 
     return json_data
 
-def getFeedbackList():
-    print("Get feedback list...")
+def getFeedbackList(baseurl):
+    print("フィードバックリストを取得中...")
 
     regex_body = r'<option value="--------"> --------</option>(.+)<script>'
     regex_option = r'^<option value="(.+)">.+<\/option>$'
@@ -177,20 +214,20 @@ def getFeedbackList():
                 for opt_match in opt_matches:
                     fblist.append(opt_match)
     except urllib.error.URLError:
-        print("Can't access the feedback list!")
+        print("Error: フィードバックリストにアクセスできませんでした!")
         sys.exit()
 
     return fblist
 
-def getAllFeedback(id, passwd, passwd_each, fbs):
+def getAllFeedback(id, conf, ceid, fbs):
     print("Get All feedback...")
     for fb in fbs:
         if os.path.exists(f"{DATA_FOLDER}/{fb}.json"):
             print(f"[Skipped] {fb}")
         else:
             print(f"[Get] {fb}")
-            pwd = passwd_each[fb] if fb in passwd_each else passwd
-            body = getFeedback(id, pwd, fb)
+            pwd = conf.passwd_each[fb] if fb in conf.password_each else conf.password
+            body = getFeedback(id, pwd, fb, conf.baseurl)
             json_data = parseFeedback(body, id)
             saveJsonFile(f"{DATA_FOLDER}/{fb}.json", json_data)
             print(f"[Saved] {fb}")
