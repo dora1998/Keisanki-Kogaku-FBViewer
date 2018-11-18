@@ -1,3 +1,6 @@
+// GoogleフォームからPandA提出ファイルを生成するスクリプト
+// Appleのアプリ「ショートカット」で利用できます
+
 filebody = ""
 
 textbox = document.querySelectorAll(".quantumWizTextinputPaperinputInput")
