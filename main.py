@@ -31,7 +31,7 @@ class Config:
                 self.student_num = df['student_num']
                 self.password = df['password']
                 if 'password_each' in df:
-                    self.password_each = df['password_each'] 
+                    self.password_each = df['password_each']
                 if 'server_port' in df:
                     self.server_port = df['server_port']
 
@@ -59,7 +59,7 @@ class Config:
         }
         with open(fileName, 'w') as f:
             json.dump(df, f, indent=4)
-        
+
 
 def main():
     # 作業ディレクトリをスクリプトのある場所に
@@ -83,7 +83,7 @@ def main():
         print('\n設定が完了しました。再度初期設定するには、settings.jsonを削除してください。\n')
 
     # 設定ファイルの読み込み
-    config.load(SETTING_FILE)    
+    config.load(SETTING_FILE)
 
     # dataフォルダがなければ作成
     os.makedirs(DATA_FOLDER, exist_ok=True)
@@ -106,7 +106,7 @@ def main():
 
 # 学生番号を変換する関数
 def getCEID(conf):
-    print("学兵番号変換中...", end='')
+    print("学生番号変換中...")
 
     params = {
         'id0': conf.student_num,
@@ -121,7 +121,7 @@ def getCEID(conf):
         print("Can't access the convert page!")
         sys.exit()
 
-    print(f'\033[2K\033[Gceid: {ceid}')
+    print(f'ceid: {ceid}')
     return ceid
 
 # フィードバック一つ分をサイトから取得
@@ -231,7 +231,7 @@ def getAllFeedback(id, conf, ceid, fbs):
             json_data = parseFeedback(body, id)
             saveJsonFile(f"{DATA_FOLDER}/{fb}.json", json_data)
             print(f"[Saved] {fb}")
-            
+
 
 def saveJsonFile(filename, json_data):
     if filename == None or json_data == None:
