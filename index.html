@@ -56,6 +56,11 @@
                     </tbody>
                 </table>
 
+                <div class="row">
+                    <graph-rate class="col-md-6" :ans="fbdata.ans" :stats="fbdata.stats"></graph-rate>
+                    <graph-score class="col-md-6" :stats="fbdata.score_count"></graph-score>
+                </div>
+
                 <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
                     <div class="panel panel-default">
                         <div class="panel-heading" role="tab" id="headingOne">
@@ -73,10 +78,11 @@
                 </div>
             </div>
         </script>
-        <div class="row" id="parent">
 
+        <div class="row" id="parent">
             <div class="col-md-3">
-                <fb-list :fb_date="fb_date" v-on:change-fb="changeFb"></fb-list>
+                <fb-list :fb_date="fb_date" :lessons="lessons" v-on:change-fb="changeFb"></fb-list>
+                <graph-history :lessons="lessons"></graph-history>
             </div>
             <div class="col-md-9" id="fb-body" :fb_date="fb_date">
                 <fb-body :fb_date="fb_date"></fb-body>
@@ -90,6 +96,8 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+    <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
     <script src="main.js"></script>
   </body>
 </html>
