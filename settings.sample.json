@@ -1,5 +1,8 @@
 {
     "student_num": "ECSID(without hyphen)",
     "password": "common password",
+    "password_each": {
+        "20181001": "another password"
+    },
     "fburl": "fburl before *.cgi"
 }

@@ -76,8 +76,7 @@ def main():
         config.student_num = input().replace('-', '')
         print('パスワード: ', end = '')
         config.password = input()
-        print('ページアドレス「http://***/feedback.html」の「http://***/」部分: ')
-        config.baseurl = input()
+        config.baseurl = 'http://easter.kuee.kyoto-u.ac.jp/X186eoI4htvDI/'
 
         config.save(SETTING_FILE)
         print('\n設定が完了しました。再度初期設定するには、settings.jsonを削除してください。\n')
