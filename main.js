@@ -215,8 +215,10 @@ Vue.component('graph-history', {
             let sum = 0
             let count = 0
             for (let i of this.graphData) {
-                count += 1
-                sum += i
+                if (!Number.isNaN(i)) {
+                    count += 1
+                    sum += i
+                }
             }
             return sum / count
         }
