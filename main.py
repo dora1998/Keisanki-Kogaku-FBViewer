@@ -226,7 +226,7 @@ def getAllFeedback(id, conf, ceid, fbs):
             print(f"[Skipped] {fb}")
         else:
             print(f"[Get] {fb}")
-            pwd = conf.passwd_each[fb] if fb in conf.password_each else conf.password
+            pwd = conf.password_each[fb] if fb in conf.password_each else conf.password
             body = getFeedback(id, pwd, fb, conf.baseurl)
             json_data = parseFeedback(body, id)
             saveJsonFile(f"{DATA_FOLDER}/{fb}.json", json_data)
