@@ -54,7 +54,8 @@ Vue.component('graph-rate', {
                     xAxes: [{
                         ticks: {
                             beginAtZero: true,
-                            min: 0
+                            min: 0,
+                            max: 100
                         }
                     }]
                 },
@@ -182,6 +183,7 @@ Vue.component('graph-history', {
                     yAxes: [{
                         ticks: {
                             beginAtZero: true,
+                            max: 100
                         }
                     }]
                 },
