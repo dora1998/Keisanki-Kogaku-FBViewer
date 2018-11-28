@@ -163,7 +163,7 @@ def parseFeedback(body, id):
             elif line != '<pre>':
                 json_data['title'] = line.replace('<br>', '')
         if mode == MODE_ANS:
-            pattern = r"(?P<qname>.+)\s:\s(?P<res>True|False)\s(?P<your_ans>.+)\s(?P<ans>\[.+\])"
+            pattern = r"(?P<qname>.+)\s:\s(?P<res>True|False)\s(?P<your_ans>.*)\s(?P<ans>\[.+\])"
             m = re.search(pattern, line)
             if m:
                 json_data['ans'].append({
