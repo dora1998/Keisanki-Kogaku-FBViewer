@@ -8,8 +8,8 @@ import os
 import hashlib
 
 CONVERT_URL = 'id_python.cgi'
-FBTOP_URL = 'feedback.html'
-FB_URL = 'retr_score.cgi'
+FBTOP_URL = 'feedback_cs19.html'
+FB_URL = 'retr_score_cs.cgi'
 BASEURL_HASH = '015ad04b3009cade2ca7939966495b4adc0f6c6cfdb3e0b968d15a5c2b73a051'
 
 SETTING_FILE = "settings.json"
