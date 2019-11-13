@@ -1,39 +1,40 @@
 @charset "utf-8";
 
 #title {
-    margin: 16px 0;
+  margin: 16px 0;
 }
 
 #fb-body h2 {
-    margin-top: 0;
+  margin-top: 0;
 }
 
 .qres {
-    vertical-align: middle;
+  vertical-align: middle;
 }
 .qres::before {
-    width: 1.5em;
-    display: inline-block;
-    text-align: center;
+  width: 1.5em;
+  display: inline-block;
+  text-align: center;
 }
 .qres.ans-true::before {
-    content: "◯";
-    color: #ff0000;
-    font-weight: bold;
-    font-size: 1.2em;
-    margin-right: 4px;
+  content: "◯";
+  color: #ff0000;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-right: 4px;
 }
 .qres.ans-false::before {
-    content: "×";
-    color: #0000ff;
-    font-weight: bold;
-    font-size: 1.2em;
-    margin-right: 4px;
+  content: "×";
+  color: #0000ff;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-right: 4px;
 }
 
-#fb-body td, #fb-body th {
-    padding: 2px 8px;
+#fb-body td,
+#fb-body th {
+  padding: 2px 8px;
 }
 #fb-body ul {
-    margin-bottom: 0;
+  margin-bottom: 0;
 }
