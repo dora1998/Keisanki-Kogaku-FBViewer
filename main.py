@@ -197,8 +197,8 @@ def parseFeedback(body, id):
 def getFeedbackList(baseurl):
     print("フィードバックリストを取得中...")
 
-    regex_body = r'<option value="--------"> --------</option>(.+)<script>'
-    regex_option = r'^<option value="(.+)">.+<\/option>$'
+    regex_body = r'<option value="--------">.*?</option>(.+)<script>'
+    regex_option = r'<option value="(.+)">.+</option>$'
 
     fblist = []
 
