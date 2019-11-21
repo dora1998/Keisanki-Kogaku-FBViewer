@@ -15,6 +15,7 @@ BASEURL_HASH = '015ad04b3009cade2ca7939966495b4adc0f6c6cfdb3e0b968d15a5c2b73a051
 SETTING_FILE = "settings.json"
 DATA_FOLDER = "./data"
 
+
 class Config:
     baseurl = ""
 
@@ -23,8 +24,8 @@ class Config:
     password_each = {}
     server_port = 8081
 
-    '''設定ファイルの読み込み'''
     def load(self, fileName):
+        """設定ファイルの読み込み"""
         try:
             with open(fileName) as f:
                 df = json.load(f)
@@ -42,14 +43,14 @@ class Config:
                     print("Error: フィードバックURLが不正です")
                     sys.exit()
         except FileNotFoundError:
-            print(fileName +  " not found!")
+            print(fileName + " not found!")
             sys.exit()
         except KeyError:
             print("Error: 設定ファイルが不正です")
             sys.exit()
 
-    '''設定ファイルの書き込み'''
     def save(self, fileName):
+        """設定ファイルの書き込み"""
         df = {
             "student_num": self.student_num,
             "password": self.password,
@@ -72,9 +73,9 @@ def main():
         print('-- 初期設定 --')
         print('※提出ごとにパスワードを変えている場合は、ドキュメントを参照の上、JSONファイルを手動で設定してください\n')
 
-        print('学生番号(ハイフンなし): ', end = '')
+        print('学生番号(ハイフンなし): ', end='')
         config.student_num = input().replace('-', '')
-        print('パスワード: ', end = '')
+        print('パスワード: ', end='')
         config.password = input()
         config.baseurl = 'http://easter.kuee.kyoto-u.ac.jp/X186eoI4htvDI/'
 
@@ -103,14 +104,16 @@ def main():
     # ビューワー用サーバーを開始
     startServer(config.server_port)
 
-# 学生番号を変換する関数
+
 def getCEID(conf):
+    """学生番号を変換する関数"""
     print("学生番号変換中...")
 
     params = {
         'id0': conf.student_num,
     }
-    req = urllib.request.Request(conf.baseurl + CONVERT_URL, urllib.parse.urlencode(params).encode('ascii'))
+    req = urllib.request.Request(
+        conf.baseurl + CONVERT_URL, urllib.parse.urlencode(params).encode('ascii'))
 
     ceid = None
     try:
@@ -123,8 +126,9 @@ def getCEID(conf):
     print(f'ceid: {ceid}')
     return ceid
 
-# フィードバック一つ分をサイトから取得
+
 def getFeedback(id, password, date, baseurl):
+    """フィードバック一つ分をサイトから取得"""
     params = {
         'id1': id,
         'passwd': password,
@@ -132,7 +136,8 @@ def getFeedback(id, password, date, baseurl):
     }
 
     body = ""
-    req = urllib.request.Request(baseurl + FB_URL, urllib.parse.urlencode(params).encode('ascii'))
+    req = urllib.request.Request(
+        baseurl + FB_URL, urllib.parse.urlencode(params).encode('ascii'))
     try:
         with urllib.request.urlopen(req) as res:
             body = res.read().decode('utf-8')
@@ -141,6 +146,7 @@ def getFeedback(id, password, date, baseurl):
         sys.exit()
 
     return body
+
 
 def parseFeedback(body, id):
     MODE_TITLE = 0
@@ -194,6 +200,7 @@ def parseFeedback(body, id):
 
     return json_data
 
+
 def getFeedbackList(baseurl):
     print("フィードバックリストを取得中...")
 
@@ -209,7 +216,8 @@ def getFeedbackList(baseurl):
             match = re.search(regex_body, body, re.MULTILINE | re.DOTALL)
             if match:
                 html_options = match.group(1)
-                opt_matches = re.findall(regex_option, html_options, re.MULTILINE)
+                opt_matches = re.findall(
+                    regex_option, html_options, re.MULTILINE)
                 for opt_match in opt_matches:
                     fblist.append(opt_match)
     except urllib.error.URLError:
@@ -217,6 +225,7 @@ def getFeedbackList(baseurl):
         sys.exit()
 
     return fblist
+
 
 def getAllFeedback(id, conf, ceid, fbs):
     print("Get All feedback...")
@@ -238,9 +247,10 @@ def saveJsonFile(filename, json_data):
     with open(filename, mode='w') as f:
         json.dump(json_data, f, indent=4)
 
+
 def startServer(port):
     server_address = ("", port)
-    handler_class = http.server.SimpleHTTPRequestHandler #ハンドラを設定
+    handler_class = http.server.SimpleHTTPRequestHandler  # ハンドラを設定
     simple_server = http.server.HTTPServer(server_address, handler_class)
 
     print(' === サーバー開始 === ')
@@ -254,6 +264,7 @@ def startServer(port):
     except:
         sys.stderr.close()
         print(' === サーバー停止 === ')
+
 
 if __name__ == "__main__":
     main()
