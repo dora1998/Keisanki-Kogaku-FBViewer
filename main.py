@@ -89,23 +89,23 @@ def main():
     os.makedirs(DATA_FOLDER, exist_ok=True)
 
     # フィードバックリストを取得して保存
-    fbs = getFeedbackList(config.baseurl)
-    saveJsonFile(f"{DATA_FOLDER}/fb.json", fbs)
+    fbs = get_feedback_list(config.baseurl)
+    save_json_file(f"{DATA_FOLDER}/fb.json", fbs)
 
     # 学生番号を変換
-    ceid = getCEID(config)
+    ceid = get_ceid(config)
     if ceid == None:
         print("Error: 学生番号の変換に失敗しました")
         sys.exit()
 
     # 全フィードバックを取得
-    getAllFeedback(ceid, config, ceid, fbs)
+    get_all_feedback(ceid, config, ceid, fbs)
 
     # ビューワー用サーバーを開始
-    startServer(config.server_port)
+    start_server(config.server_port)
 
 
-def getCEID(conf):
+def get_ceid(conf):
     """学生番号を変換する関数"""
     print("学生番号変換中...")
 
@@ -127,7 +127,7 @@ def getCEID(conf):
     return ceid
 
 
-def getFeedback(id, password, date, baseurl):
+def get_feedback(id, password, date, baseurl):
     """フィードバック一つ分をサイトから取得"""
     params = {
         'id1': id,
@@ -148,7 +148,7 @@ def getFeedback(id, password, date, baseurl):
     return body
 
 
-def parseFeedback(body, id):
+def parse_feedback(body, id):
     MODE_TITLE = 0
     MODE_ANS = 1
     MODE_STATS = 2
@@ -201,7 +201,7 @@ def parseFeedback(body, id):
     return json_data
 
 
-def getFeedbackList(baseurl):
+def get_feedback_list(baseurl):
     print("フィードバックリストを取得中...")
 
     regex_body = r'<option value="--------">.*?</option>(.+)<script>'
@@ -227,7 +227,7 @@ def getFeedbackList(baseurl):
     return fblist
 
 
-def getAllFeedback(id, conf, ceid, fbs):
+def get_all_feedback(id, conf, ceid, fbs):
     print("Get All feedback...")
     for fb in fbs:
         if os.path.exists(f"{DATA_FOLDER}/{fb}.json"):
@@ -235,20 +235,20 @@ def getAllFeedback(id, conf, ceid, fbs):
         else:
             print(f"[Get] {fb}")
             pwd = conf.password_each[fb] if fb in conf.password_each else conf.password
-            body = getFeedback(id, pwd, fb, conf.baseurl)
-            json_data = parseFeedback(body, id)
-            saveJsonFile(f"{DATA_FOLDER}/{fb}.json", json_data)
+            body = get_feedback(id, pwd, fb, conf.baseurl)
+            json_data = parse_feedback(body, id)
+            save_json_file(f"{DATA_FOLDER}/{fb}.json", json_data)
             print(f"[Saved] {fb}")
 
 
-def saveJsonFile(filename, json_data):
+def save_json_file(filename, json_data):
     if filename == None or json_data == None:
         return
     with open(filename, mode='w') as f:
         json.dump(json_data, f, indent=4)
 
 
-def startServer(port):
+def start_server(port):
     server_address = ("", port)
     handler_class = http.server.SimpleHTTPRequestHandler  # ハンドラを設定
     simple_server = http.server.HTTPServer(server_address, handler_class)
