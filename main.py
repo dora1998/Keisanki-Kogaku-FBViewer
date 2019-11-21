@@ -186,19 +186,19 @@ def parse_feedback(body, id):
             if line == "# score count":
                 mode = ParseMode.SCORECOUNT
             elif line.startswith("#") == False:
-                tbl = [i for i in line.split(' ') if len(i) > 0]
+                tbl = [i.strip() for i in line.split(' ') if len(i) > 0]
                 if len(tbl) == 4:
                     json_data['stats'].append({
                         'qname': tbl[0],
-                        'rate': tbl[1],
-                        'pos': tbl[2],
-                        'N': tbl[3]
+                        'rate': float(tbl[1]),
+                        'pos': int(tbl[2]),
+                        'N': int(tbl[3])
                     })
         if mode == ParseMode.SCORECOUNT:
             if line.startswith("#") == False:
                 tbl = line.split("    ")
                 if len(tbl) == 2:
-                    json_data['score_count'][int(tbl[0])] = tbl[1]
+                    json_data['score_count'][int(tbl[0])] = int(tbl[1])
 
     return json_data
 
