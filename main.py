@@ -6,6 +6,7 @@ import webbrowser
 import sys
 import os
 import hashlib
+from enum import Enum
 
 CONVERT_URL = 'id_python.cgi'
 FBTOP_URL = 'feedback.html'
@@ -149,10 +150,11 @@ def get_feedback(id, password, date, baseurl):
 
 
 def parse_feedback(body, id):
-    MODE_TITLE = 0
-    MODE_ANS = 1
-    MODE_STATS = 2
-    MODE_SCORECOUNT = 3
+    class ParseMode(Enum):
+        TITLE = 0
+        ANS = 1
+        STATS = 2
+        SCORECOUNT = 3
 
     json_data = {}
     json_data['raw_data'] = body
@@ -160,15 +162,15 @@ def parse_feedback(body, id):
     json_data['stats'] = []
     json_data['score_count'] = {}
 
-    mode = MODE_TITLE
+    mode = ParseMode.TITLE
     for line in body.splitlines():
-        if mode == MODE_TITLE:
+        if mode == ParseMode.TITLE:
             if line.startswith('id='):
                 json_data['submit_date'] = line.replace(f'id= {id} @ ', '')
-                mode = MODE_ANS
+                mode = ParseMode.ANS
             elif line != '<pre>':
                 json_data['title'] = line.replace('<br>', '')
-        if mode == MODE_ANS:
+        if mode == ParseMode.ANS:
             pattern = r"(?P<qname>.+)\s:\s(?P<res>True|False)\s(?P<your_ans>.*)\s(?P<ans>\[.+\])"
             m = re.search(pattern, line)
             if m:
@@ -179,10 +181,10 @@ def parse_feedback(body, id):
                     'ans': m.group('ans')
                 })
             elif line == "# stats":
-                mode = MODE_STATS
-        if mode == MODE_STATS:
+                mode = ParseMode.STATS
+        if mode == ParseMode.STATS:
             if line == "# score count":
-                mode = MODE_SCORECOUNT
+                mode = ParseMode.SCORECOUNT
             elif line.startswith("#") == False:
                 tbl = [i for i in line.split(' ') if len(i) > 0]
                 if len(tbl) == 4:
@@ -192,7 +194,7 @@ def parse_feedback(body, id):
                         'pos': tbl[2],
                         'N': tbl[3]
                     })
-        if mode == MODE_SCORECOUNT:
+        if mode == ParseMode.SCORECOUNT:
             if line.startswith("#") == False:
                 tbl = line.split("    ")
                 if len(tbl) == 2:
