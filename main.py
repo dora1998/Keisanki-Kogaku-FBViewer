@@ -38,7 +38,7 @@ class Config:
                     self.server_port = df['server_port']
 
                 self.baseurl = df['fburl']
-                if self.baseurl.endswith("/") == False:
+                if self.baseurl.endswith("/") is False:
                     self.baseurl += "/"
                 if hashlib.sha256(self.baseurl.encode("utf-8")).hexdigest() != BASEURL_HASH:
                     print("Error: フィードバックURLが不正です")
@@ -95,7 +95,7 @@ def main():
 
     # 学生番号を変換
     ceid = get_ceid(config)
-    if ceid == None:
+    if ceid is None:
         print("Error: 学生番号の変換に失敗しました")
         sys.exit()
 
@@ -149,7 +149,7 @@ def get_feedback(id, password, date, baseurl):
     return body
 
 
-def parse_feedback(body, id):
+def parse_feedback(body, id):   # noqa: C901
     class ParseMode(Enum):
         TITLE = 0
         ANS = 1
@@ -189,7 +189,7 @@ def parse_feedback(body, id):
         if mode == ParseMode.STATS:
             if line == "# score count":
                 mode = ParseMode.SCORECOUNT
-            elif line.startswith("#") == False:
+            elif line.startswith("#") is False:
                 tbl = [i.strip() for i in line.split(' ') if len(i) > 0]
                 if len(tbl) == 4:
                     json_data['stats'].append({
@@ -199,7 +199,7 @@ def parse_feedback(body, id):
                         'N': int(tbl[3])
                     })
         if mode == ParseMode.SCORECOUNT:
-            if line.startswith("#") == False:
+            if line.startswith("#") is False:
                 tbl = line.split("    ")
                 if len(tbl) == 2:
                     json_data['score_count'][int(tbl[0])] = int(tbl[1])
@@ -248,7 +248,7 @@ def get_all_feedback(id, conf, ceid, fbs):
 
 
 def save_json_file(filename, json_data):
-    if filename == None or json_data == None:
+    if filename is None or json_data is None:
         return
     with open(filename, mode='w') as f:
         json.dump(json_data, f, indent=4)
@@ -267,7 +267,7 @@ def start_server(port):
     webbrowser.open(f'http://localhost:{port}/')
     try:
         simple_server.serve_forever()
-    except:
+    except:  # noqa: E722
         sys.stderr.close()
         print(' === サーバー停止 === ')
 

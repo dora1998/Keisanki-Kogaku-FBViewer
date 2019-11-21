@@ -1,6 +1,5 @@
 import unittest
 import os
-import json
 from main import parse_feedback
 
 
