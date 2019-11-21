@@ -168,8 +168,12 @@ def parse_feedback(body, id):
             if line.startswith('id='):
                 json_data['submit_date'] = line.replace(f'id= {id} @ ', '')
                 mode = ParseMode.ANS
+            elif 'no match' in line:
+                json_data['error'] = True
+                mode = ParseMode.ANS
             elif line != '<pre>':
-                json_data['title'] = line.replace('<br>', '')
+                json_data['title'] = line.replace(
+                    '<br>', '').replace('<br />', '')
         if mode == ParseMode.ANS:
             pattern = r"(?P<qname>.+)\s:\s(?P<res>True|False)\s(?P<your_ans>.*)\s(?P<ans>\[.+\])"
             m = re.search(pattern, line)
