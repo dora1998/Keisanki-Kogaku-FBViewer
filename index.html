@@ -36,7 +36,7 @@
       <script type="text/x-template" id="fb-body">
         <div>
             <h2>{{ fbdata.title }}</h2>
-            <div class="alert alert-warning" role="alert" v-if="fbdata.title == '</pre>'">
+            <div class="alert alert-warning" role="alert" v-if="fbdata.error">
                 取得に失敗しています。パスワードを再確認し、この日付のファイルをdataフォルダから削除して再起動してください。
             </div>
             <p>採点日時: {{ fbdata.submit_date }}</p>
